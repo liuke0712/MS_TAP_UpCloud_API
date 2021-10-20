@@ -1,55 +1,68 @@
-import upcloud_api
-from upcloud_api import Server, Storage, Tag, login_user_block
+import os
+from datetime import datetime
+
 import paramiko
-# from upcloud_api.storage import BackupDeletionPolicy
 from cryptography import x509
+import upcloud_api
+# from upcloud_api.storage import BackupDeletionPolicy
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
-import json
+from cryptography.hazmat.primitives.asymmetric import rsa
+from upcloud_api import Server, Storage, login_user_block
+import logs
+import os
+
 
 class Upcloud_API:
     def __init__(self):
+        self.mylogger = logs.Logs()
         self.manager = upcloud_api.CloudManager('tapaug2021ee', 'gr4D334uG2021')
         self.manager.authenticate()
-        self.tag = Tag('JWM_TEAM')
-        self.plan1 = "1xCPU-2GB"
-        self.plan2 = "1xCPU-1GB"
-        self.plan3 = "2xCPU-4GB"
-        self.plan4 = "4xCPU-8GB"
-        self.plan5 = "6xCPU-16GB"
-        self.plan6 = "8xCPU-32GB"
-        self.plan7 = "12xCPU-48GB"
-        self.plan8 = "16xCPU-64GB"
-        self.plan9 = "20xCPU-96GB"
-        self.plan10 = "20xCPU-128G"
-        self.planList=[ "1xCPU-2GB","1xCPU-1GB","2xCPU-4GB","4xCPU-8GB","6xCPU-16GB","8xCPU-32GB","12xCPU-48GB","16xCPU-64GB","20xCPU-96GB","20xCPU-128G"]
-        # self.logs
+        if os.path.isfile('.\private_key.pem'):
+            self.login_user = self.get_login_user()
+        else:
+            self.login_user = self.key_pair_create()
+        self.planList = ["1xCPU-2GB", "1xCPU-1GB", "2xCPU-4GB", "4xCPU-8GB", "6xCPU-16GB", "8xCPU-32GB", "12xCPU-48GB",
+                         "16xCPU-64GB", "20xCPU-96GB", "20xCPU-128G"]
 
-
-    # login user
-    def key_pair_login(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=default_backend()
-        )
-        #generate the public key
-        public_key = private_key.public_key().public_bytes(serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH)
-        public_key = public_key.decode(encoding='UTF-8')
-        # get private key in PEM container format
-        pem = private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                encryption_algorithm=serialization.NoEncryption())
+    # get public key from the existing private key
+    def get_login_user(self):
+        with open('private_key.pem', 'rb') as file:
+            private_key = serialization.load_pem_private_key(file.read(), None, default_backend())
+            public_key = private_key.public_key().public_bytes(serialization.Encoding.OpenSSH,
+                                                               serialization.PublicFormat.OpenSSH)
+            public_key = public_key.decode(encoding='UTF-8')
         login_user = login_user_block(
             username='root',
             ssh_keys=[public_key],
             create_password=False
         )
-        with open('private_key.pem','wb') as f:
-            f.write(pem)
         return login_user
 
+    # create new key pair
+    def key_pair_create(self):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+        # generate the public key
+        public_key = private_key.public_key().public_bytes(serialization.Encoding.OpenSSH,
+                                                           serialization.PublicFormat.OpenSSH)
+        public_key = public_key.decode(encoding='UTF-8')
+        # get private key in PEM container format
+        pem = private_key.private_bytes(encoding=serialization.Encoding.PEM,
+                                        format=serialization.PrivateFormat.TraditionalOpenSSL,
+                                        encryption_algorithm=serialization.NoEncryption())
+        login_user = login_user_block(
+            username='root',
+            ssh_keys=[public_key],
+            create_password=False
+        )
+        self.mylogger.info_logger('A private_key.pem file is generated and stored for user: root.')
+        with open('private_key.pem', 'wb') as f:
+            f.write(pem)
+        return login_user
 
     def get_zones(self):
         zones = self.manager.get_zones()['zones']['zone']
@@ -58,14 +71,12 @@ class Upcloud_API:
             zone_list.append(zone['id'])
         return zone_list
 
-
     def get_templates(self):
         templates = self.manager.get_templates()
         return templates
 
-
-    #new server creation
-    def create_server(self, plan, zone, hostname, os, os_size, login_user):
+    # new server creation
+    def create_server(self, plan, zone, hostname, os, os_size):
         server = Server(
             plan=plan,
             hostname=hostname,
@@ -73,75 +84,55 @@ class Upcloud_API:
             storage_devices=[
                 Storage(os=os, size=os_size),
             ],
-            login_user=login_user  # user and ssh-keys
+            login_user=self.login_user  # user and ssh-keys
         )
-        self.manager.create_server(server)
-        self.server_status(server)
+        server = self.manager.create_server(server)
+        server_uuid = server.to_dict()['uuid']
+        server_name = server.to_dict()['hostname']
+        self.mylogger.info_logger(server_name + ' with uuid:' +server_uuid+' was created.')
         return server
 
-
-    #get current server status
-    def server_status(self,uuid):
+    # get current server status
+    def server_status(self, uuid):
         server_status = self.manager.get_server(uuid).to_dict()['state']
         server_name = self.manager.get_server(uuid).to_dict()['hostname']
-        return "Current status of server: "+server_name+ ":"+uuid+"  is "+server_status
-    def server_name(self,uuid):
-        return self.manager.get_server(uuid).to_dict()['hostname']
-    def server_ip(self, uuid):
-        for i in self.manager.get_server(uuid).to_dict()['ip_addresses']:
-            if i['access']=='public' and i['family']== 'IPv4':
-                return i['address']
+        return server_status
 
-
-    #get all server list
+    # get all server list
     def server_list(self):
         servers = self.manager.get_servers()
-        server_list=[]
+        server_list = []
         for server in servers:
             server_list.append(server.to_dict())
         return server_list
 
-
-    #get one server details
-    def single_server(self,uuid):
+    # get one server details
+    def single_server(self, uuid):
         server = self.manager.get_server(uuid).to_dict()
         return server
 
-
-    def access_console(self,uuid):
-        try:
-            server = self.manager.get_server(uuid).to_dict()
-            ip_addr = server['ip_addresses']
-            for ip in ip_addr:
-                if ip['access'] =='public' and ip['family'] == 'IPv4':
-                    ssh = paramiko.SSHClient()
-                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(ip['address'],port=22,username='test_user',key_filename='.\private_key.pem')
-                    command = 'uname -r '
-                    stdin, stdout, stderr = ssh.exec_command(command)
-                    lines = stdout.readlines()
-                    print(lines)
-                    break
-        except Exception as e:
-            raise e
-
-
     # check the performance of linux server
-    def perform_statistic_linux(self,uuid):
+    def perform_statistic_linux(self, uuid):
         try:
             server = self.manager.get_server(uuid).to_dict()
             ip_addr = server['ip_addresses']
             perform_info = []
             for ip in ip_addr:
-                if ip['access'] =='public' and ip['family'] == 'IPv4':
+                if ip['access'] == 'public' and ip['family'] == 'IPv4':
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(ip['address'],port=22,username='root',key_filename='private_key.pem')
+                    ssh.connect(ip['address'], port=22, username='root', key_filename='private_key.pem')
                     command = 'export TERM=xterm && top -n 1 -b'
                     # command = 'export TERM=xterm && mpstat'
                     stdin, stdout, stderr = ssh.exec_command(command)
-                    lines = stdout.readlines()
+                    lines = stdout.readlines()[0:5]
+                    lines.insert(0, '--------------------------------Resource Usage-----------------------------------')
                     err_lines = stderr.readlines()
+                    command = 'export TERM=xterm && df'
+                    stdin, stdout, stderr = ssh.exec_command(command)
+                    lines.append('----------------------------------Disk Filesystem--------------------------------')
+                    lines.extend(stdout)
+                    err_lines.extend(stderr)
                     break
             if err_lines:
                 return err_lines
@@ -150,27 +141,49 @@ class Upcloud_API:
         except Exception as e:
             raise e
 
-
-    #delete a vm based on the uuid
-    def rm_server(self,uuid):
+    def server_stop(self, uuid):
         server = self.manager.get_server(uuid)
-        server.shutdown(hard=True)
-        while self.manager.get_server(uuid).to_dict()["state"] != "stopped":
-            pass
-        self.manager.delete_server(uuid)
-        return "Selected server deleted."
+        if server.to_dict()['state'] != 'stopped':
+            server.shutdown(hard=True)
+        self.mylogger.info_logger('Server: ' + uuid + ' has been stopped.')
+
+    # delete a vm based on the uuid
+    def rm_server(self, uuid):
+        try:
+            self.manager.delete_server(uuid)
+            self.mylogger.info_logger('Server: ' + uuid + ' has been deleted.')
+            return "SUCCESS"
+        except Exception as e:
+            return str(e)
+
+    # check log of a specific server
+    def check_log(self, uuid):
+        with open("app.log", 'r') as file:
+            lines = file.readlines()
+            server_log = []
+            for line in lines:
+                if uuid in line:
+                    server_log.append(line)
+        return server_log
 
 
 if __name__ == '__main__':
     ins = Upcloud_API()
-    # login_user = ins.key_pair_login()
+    # ins.get_login_user()
+    # print(ins.check_log('00c9f070-5cee-482f-97a8-24fb848d948d'))
     # print(ins.server_list())
     # print(ins.get_zones())
     # print(ins.get_templates())
     # print(ins.single_server('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.access_console('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.server_list())
-    print(ins.server_status('00e3d773-a32e-4cea-9653-1df3543710fa'))
-    # print(ins.perform_statistic_linux('00e3d773-a32e-4cea-9653-1df3543710fa'))
-    # print(ins.create_server("2xCPU-4GB","uk-lon1","maggie.win.com", "01000000-0000-4000-8000-000030200200", "10",login_user))
-    # ins.rm_server("0021e1da-be14-4440-8de6-f04b0650926b")
+    print(ins.server_status('0005cdb3-a035-4625-bf7d-449117a2b7cc'))
+    # print(ins.perform_statistic_linux('0028ea76-cb26-43e7-9862-d89d164e2a6a'))
+    # print(ins.create_server("2xCPU-4GB","uk-lon1","maggie.jmw.com", "01000000-0000-4000-8000-000030200200", "10"))
+    # print(ins.server_stop('00c9f070-5cee-482f-97a8-24fb848d948d'))
+    # print(ins.rm_server("00c9f070-5cee-482f-97a8-24fb848d948d"))
+# get server details
+# print(self.manager.get_server("0021e1da-be14-4440-8de6-f04b0650926b").to_dict())
+# get server states
+# print(manager.get_server("0021e1da-be14-4440-8de6-f04b0650926b").to_dict()['state'])
+# delete vms (stop first)
