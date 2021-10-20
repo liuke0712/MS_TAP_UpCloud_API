@@ -1,8 +1,8 @@
 from app import app
-from Upcloud_API import Upcloud_api
+from Upcloud_API import Upcloud_API
 from flask import request, jsonify
 
-api = Upcloud_api()
+api = Upcloud_API()
 
 sample_start_server = [
     {

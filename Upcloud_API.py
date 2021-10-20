@@ -6,6 +6,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+import json
 
 class Upcloud_API:
     def __init__(self):
@@ -22,6 +23,7 @@ class Upcloud_API:
         self.plan8 = "16xCPU-64GB"
         self.plan9 = "20xCPU-96GB"
         self.plan10 = "20xCPU-128G"
+        self.planList=[ "1xCPU-2GB","1xCPU-1GB","2xCPU-4GB","4xCPU-8GB","6xCPU-16GB","8xCPU-32GB","12xCPU-48GB","16xCPU-64GB","20xCPU-96GB","20xCPU-128G"]
         # self.logs
 
 
@@ -83,6 +85,12 @@ class Upcloud_API:
         server_status = self.manager.get_server(uuid).to_dict()['state']
         server_name = self.manager.get_server(uuid).to_dict()['hostname']
         return "Current status of server: "+server_name+ ":"+uuid+"  is "+server_status
+    def server_name(self,uuid):
+        return self.manager.get_server(uuid).to_dict()['hostname']
+    def server_ip(self, uuid):
+        for i in self.manager.get_server(uuid).to_dict()['ip_addresses']:
+            if i['access']=='public' and i['family']== 'IPv4':
+                return i['address']
 
 
     #get all server list
