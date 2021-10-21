@@ -1,8 +1,11 @@
+import base64
+import json
 import os
 from collections import OrderedDict
 from datetime import datetime
 
 import paramiko
+import requests
 from cryptography import x509
 import upcloud_api
 # from upcloud_api.storage import BackupDeletionPolicy
@@ -13,11 +16,15 @@ from upcloud_api import Server, Storage, login_user_block, UpCloudAPIError
 import logs
 import os
 
+apiURL = 'https://api.upcloud.com/1.3'
+api_username = 'tapaug2021ee'
+api_password = 'gr4D334uG2021'
+
 
 class Upcloud_API:
     def __init__(self):
         self.mylogger = logs.Logs()
-        self.manager = upcloud_api.CloudManager('tapaug2021ee', 'gr4D334uG2021')
+        self.manager = upcloud_api.CloudManager(api_username, api_password)
         self.manager.authenticate()
         if os.path.isfile('private_key.pem'):
             self.login_user = self.get_login_user()
@@ -27,6 +34,7 @@ class Upcloud_API:
             [("1xCPU-2GB", 25), ("1xCPU-1GB", 50), ("2xCPU-4GB", 80), ("4xCPU-8GB", 160), ("6xCPU-16GB", 320),
              ("8xCPU-32GB", 640), ("12xCPU-48GB", 960),
              ("16xCPU-64GB", 1280), ("20xCPU-96GB", 1920), ("20xCPU-128G", 2048)])
+        self.auth = base64.b64encode(f"{api_username}:{api_password}".encode())
 
     # get public key from the existing private key
     def get_login_user(self):
@@ -158,13 +166,12 @@ class Upcloud_API:
         self.mylogger.info_logger('Server: ' + uuid + ' has been stopped.')
 
     # delete a vm based on the uuid
-    def rm_server(self, uuid):
-        try:
-            self.manager.delete_server(uuid)
-            self.mylogger.info_logger('Server: ' + uuid + ' has been deleted.')
-            return "SUCCESS"
-        except Exception as e:
-            return str(e)
+    def rm_server(self, uuid, storages=1, backups='delete'):
+        response = requests.delete(f'{apiURL}/server/{uuid}?storages={storages}&backups={backups}',
+                                   headers={"Authorization": "Basic " + self.auth.decode()})
+        return response.text
+        # self.manager.delete_server(uuid, delete_storages=True)
+        # self.mylogger.info_logger('Server: ' + uuid + ' has been deleted.')
 
     # check log of a specific server
     def check_log(self, uuid):
@@ -179,7 +186,6 @@ class Upcloud_API:
 
 if __name__ == '__main__':
     ins = Upcloud_API()
-    print(ins.single_server('sfsaf'))
     # ins.get_login_user()
     # print(ins.check_log('00c9f070-5cee-482f-97a8-24fb848d948d'))
     # print(ins.server_list())

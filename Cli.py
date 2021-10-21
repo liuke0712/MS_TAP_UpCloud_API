@@ -324,10 +324,11 @@ class Cli:
         print("Server status: stopped")
         print('Deleting server')
         response = requests.delete(baseURL + '/server/' + uuid)
-        if response.text == 'SUCCESS':
+        if not response.text:
             print("Server status (uuid: " + uuid + "): deleted.")
+            self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
         else:
-            print("Failed to destroy server (uuid: " + uuid + "): " + response.text)
+            print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text))
 
     def performe_CheckVmStatus(self):
         self.get_checkStatus_choice()
