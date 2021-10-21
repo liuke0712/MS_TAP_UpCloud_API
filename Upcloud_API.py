@@ -170,8 +170,6 @@ class Upcloud_API:
         response = requests.delete(f'{apiURL}/server/{uuid}?storages={storages}&backups={backups}',
                                    headers={"Authorization": "Basic " + self.auth.decode()})
         return response.text
-        # self.manager.delete_server(uuid, delete_storages=True)
-        # self.mylogger.info_logger('Server: ' + uuid + ' has been deleted.')
 
     # check log of a specific server
     def check_log(self, uuid):
