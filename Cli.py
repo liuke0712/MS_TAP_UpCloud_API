@@ -360,14 +360,14 @@ class Cli:
         else:
             uuid_list.append(out)
         for count, uuid in enumerate(uuid_list):
-            print('Stopping server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            print('Stopping server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ')')
             requests.post(baseURL + '/server/stop/' + uuid)
             while True:
                 status = self.get_server_status(uuid)
                 if status == 'stopped':
                     break
             print("Server status: stopped")
-            print('Deleting server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            print('Deleting server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ')')
             response = requests.delete(baseURL + '/server/' + uuid)
             if not response.text:
                 print("Server status (uuid: " + uuid + "): deleted.")
