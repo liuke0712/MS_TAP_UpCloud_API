@@ -64,7 +64,7 @@ class Cli:
             'choices': plans.keys()
         }
         answers = prompt(directions_prompt)
-        return answers['plan'],plans[answers['plan']]
+        return answers['plan'], plans[answers['plan']]
 
     def ask_os(self):
         directions_prompt = {
@@ -75,15 +75,17 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         return answers['os']
-    def ask_os_size(self,default_size):
+
+    def ask_os_size(self, default_size):
         directions_prompt = {
             'type': 'list',
             'name': 'os_size',
-            'message': 'Would you like to change the default storage size('+ str(default_size) + 'GB)?',
-            'choices': ['NO','YES']
+            'message': 'Would you like to change the default storage size(' + str(default_size) + 'GB)?',
+            'choices': ['NO', 'YES']
         }
         answers = prompt(directions_prompt)
         return answers['os_size']
+
     def get_os_storage(self):
         while True:
             try:
@@ -127,8 +129,8 @@ class Cli:
     def get_vm_details(self):
         vmDetails = []
         zone = self.ask_zone()
-        os_name=self.ask_os()
-        plan, os_size= self.ask_plan()
+        os_name = self.ask_os()
+        plan, os_size = self.ask_plan()
         if self.ask_os_size(os_size) == 'YES':
             os_size = self.get_os_storage()
         os = self.get_os_dict()[os_name]
