@@ -51,8 +51,10 @@ def get_server_perf(uuid):
 
 @app.route('/server/<uuid>', methods=['PUT'])
 def modify_server(uuid):
-    response = api.server_modify(uuid)
-    return jsonify(response.json())
+    json_data=request.get_json()
+    new_config=json.loads(json_data)
+    response = api.server_modify(uuid,new_config['plan'])
+    return jsonify(response)
 
 
 @app.route('/server/start/<uuid>', methods=['POST'])
