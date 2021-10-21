@@ -19,12 +19,14 @@ class Upcloud_API:
         self.mylogger = logs.Logs()
         self.manager = upcloud_api.CloudManager('tapaug2021ee', 'gr4D334uG2021')
         self.manager.authenticate()
-        if os.path.isfile('.\private_key.pem'):
+        if os.path.isfile('private_key.pem'):
             self.login_user = self.get_login_user()
         else:
             self.login_user = self.key_pair_create()
-        self.planList = OrderedDict([("1xCPU-2GB", 25), ("1xCPU-1GB" ,50) , ("2xCPU-4GB",80), ("4xCPU-8GB",160), ("6xCPU-16GB",320), ("8xCPU-32GB",640), ("12xCPU-48GB",960),
-                         ("16xCPU-64GB",1280), ("20xCPU-96GB",1920), ("20xCPU-128G",2048)])
+        self.planList = OrderedDict(
+            [("1xCPU-2GB", 25), ("1xCPU-1GB", 50), ("2xCPU-4GB", 80), ("4xCPU-8GB", 160), ("6xCPU-16GB", 320),
+             ("8xCPU-32GB", 640), ("12xCPU-48GB", 960),
+             ("16xCPU-64GB", 1280), ("20xCPU-96GB", 1920), ("20xCPU-128G", 2048)])
 
     # get public key from the existing private key
     def get_login_user(self):
@@ -119,7 +121,6 @@ class Upcloud_API:
         except UpCloudAPIError as e:
             return {'api_error': str(e)}
 
-
     # check the performance of linux server
     def perform_statistic_linux(self, uuid):
         try:
@@ -174,8 +175,6 @@ class Upcloud_API:
                 if uuid in line:
                     server_log.append(line)
         return server_log
-    def get_plans(self):
-        self.manager.p
 
 
 if __name__ == '__main__':
