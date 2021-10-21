@@ -13,12 +13,14 @@ def create_server():
     print(json_data)
     server = json.loads(json_data)
     new_server = api.create_server(server['plan'], server['zone'], server['hostname'], server['os'],
-                                   int(server['size']))
-    new_server_dict = new_server.to_dict()
+                                   int(server['size']), server['title'])
+    if 'api_error' in new_server:
+        return new_server
     return jsonify({
-        "state": new_server_dict['state'],
-        "hostname": new_server_dict['hostname'],
-        "uuid": new_server_dict['uuid']
+        "state": new_server['state'],
+        "title": new_server['title'],
+        "hostname": new_server['hostname'],
+        "uuid": new_server['uuid']
     })
 
 
@@ -77,7 +79,8 @@ def get_templates():
     response = api.get_templates()
     return jsonify(response)
 
-@app.route('/logs/<uuid>',methods=['GET'])
+
+@app.route('/logs/<uuid>', methods=['GET'])
 def get_log(uuid):
     response = api.check_log(uuid)
     return jsonify(response)

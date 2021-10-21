@@ -9,7 +9,7 @@ import upcloud_api
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from upcloud_api import Server, Storage, login_user_block
+from upcloud_api import Server, Storage, login_user_block, UpCloudAPIError
 import logs
 import os
 
@@ -77,21 +77,25 @@ class Upcloud_API:
         return templates
 
     # new server creation
-    def create_server(self, plan, zone, hostname, os, os_size):
-        server = Server(
-            plan=plan,
-            hostname=hostname,
-            zone=zone,  # All available zones with ids can be retrieved by using manager.get_zones()
-            storage_devices=[
-                Storage(os=os, size=os_size),
-            ],
-            login_user=self.login_user  # user and ssh-keys
-        )
-        server = self.manager.create_server(server)
-        server_uuid = server.to_dict()['uuid']
-        server_name = server.to_dict()['hostname']
-        self.mylogger.info_logger(server_name + ' with uuid:' +server_uuid+' was created.')
-        return server
+    def create_server(self, plan, zone, hostname, os, os_size, title):
+        try:
+            server = Server(
+                plan=plan,
+                hostname=hostname,
+                zone=zone,  # All available zones with ids can be retrieved by using manager.get_zones()
+                storage_devices=[
+                    Storage(os=os, size=os_size),
+                ],
+                title=title,
+                login_user=self.login_user  # user and ssh-keys
+            )
+            server = self.manager.create_server(server)
+            server_uuid = server.to_dict()['uuid']
+            server_name = server.to_dict()['hostname']
+            self.mylogger.info_logger(server_name + ' with uuid:' + server_uuid + ' was created.')
+            return server.to_dict()
+        except UpCloudAPIError as e:
+            return {'api_error': str(e)}
 
     # get current server status
     def server_status(self, uuid):
@@ -109,8 +113,12 @@ class Upcloud_API:
 
     # get one server details
     def single_server(self, uuid):
-        server = self.manager.get_server(uuid).to_dict()
-        return server
+        try:
+            server = self.manager.get_server(uuid).to_dict()
+            return server
+        except UpCloudAPIError as e:
+            return {'api_error': str(e)}
+
 
     # check the performance of linux server
     def perform_statistic_linux(self, uuid):
@@ -172,6 +180,7 @@ class Upcloud_API:
 
 if __name__ == '__main__':
     ins = Upcloud_API()
+    print(ins.single_server('sfsaf'))
     # ins.get_login_user()
     # print(ins.check_log('00c9f070-5cee-482f-97a8-24fb848d948d'))
     # print(ins.server_list())
@@ -180,7 +189,7 @@ if __name__ == '__main__':
     # print(ins.single_server('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.access_console('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.server_list())
-    print(ins.server_status('0005cdb3-a035-4625-bf7d-449117a2b7cc'))
+    # print(ins.server_status('0005cdb3-a035-4625-bf7d-449117a2b7cc'))
     # print(ins.perform_statistic_linux('0028ea76-cb26-43e7-9862-d89d164e2a6a'))
     # print(ins.create_server("2xCPU-4GB","uk-lon1","maggie.jmw.com", "01000000-0000-4000-8000-000030200200", "10"))
     # print(ins.server_stop('00c9f070-5cee-482f-97a8-24fb848d948d'))
