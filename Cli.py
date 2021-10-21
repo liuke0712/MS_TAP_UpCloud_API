@@ -195,7 +195,7 @@ class Cli:
         directions_prompt = {
             'type': 'list',
             'name': 'vm',
-            'message': '  please pick one of the bellow VM list',
+            'message': '  please pick one of the below VM list',
             'choices': self.get_all_servers_list()
         }
         answers = prompt(directions_prompt)
@@ -315,19 +315,20 @@ class Cli:
 
     def performe_deleteVm(self):
         uuid = self.get_choice()
-        monitor = self.request_progress()
+        print('Stopping server...')
         requests.delete(baseURL + '/server/stop/' + uuid)
-        if monitor == 'YES':
-            while True:
-                status = self.get_server_status(uuid)
-                if status == 'stopped':
-                    break
-            print("Server status: stopped")
+        while True:
+            status = self.get_server_status(uuid)
+            if status == 'stopped':
+                break
+        print("Server status: stopped")
+        print('Deleting server')
         response = requests.delete(baseURL + '/server/' + uuid)
-        if response.text == 'SUCCESS':
-            print("Server status (uuid: " + uuid + "): destroyed.")
+        if not response.text:
+            print("Server status (uuid: " + uuid + "): deleted.")
+            self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
         else:
-            print("Failed to destroy server (uuid: " + uuid + "): " + response.text)
+            print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text))
 
     def performe_CheckVmStatus(self):
         self.get_checkStatus_choice()
