@@ -68,6 +68,7 @@ def get_zones():
 
 @app.route('/plan', methods=['GET'])
 def get_plans():
+    print(api.planList)
     return jsonify(api.planList)
 
 

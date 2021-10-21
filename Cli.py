@@ -60,10 +60,10 @@ class Cli:
             'type': 'list',
             'name': 'plan',
             'message': 'Which plan would you like to choose?',
-            'choices': plans
+            'choices': plans.keys()
         }
         answers = prompt(directions_prompt)
-        return answers['plan']
+        return answers['plan'],plans[answers['plan']]
 
     def ask_os(self):
         directions_prompt = {
@@ -74,7 +74,15 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         return answers['os']
-
+    def ask_os_size(self,default_size):
+        directions_prompt = {
+            'type': 'list',
+            'name': 'os_size',
+            'message': 'Would you like to change the default storage size('+ str(default_size) + 'GB)?',
+            'choices': ['NO','YES']
+        }
+        answers = prompt(directions_prompt)
+        return answers['os_size']
     def get_os_storage(self):
         while True:
             try:
@@ -119,10 +127,11 @@ class Cli:
     def get_vm_details(self):
         vmDetails=[]
         zone = self.ask_zone()
-        plan = self.ask_plan()
         os_name=self.ask_os()
+        plan, os_size= self.ask_plan()
+        if self.ask_os_size(os_size) == 'YES':
+            os_size = self.get_os_storage()
         os = self.get_os_dict()[os_name]
-        os_size = self.get_os_storage()
         VmNumber = int(self.get_input('how many VMs you would like to create with these options:\n' +'zone :' +zone +'\n'+'plan: '+plan +'\n'+'os: '+os_name +'\n' ))
         self.choice_confirm()
         count=1
@@ -188,7 +197,7 @@ class Cli:
             'choices': ['choice from existing VMs list','enter VM UUID','Return To the Main Menu','EXIT']
         }
         answers = prompt(directions_prompt)
-        if  answers['delete_option'] == "choice from existing VMs list":
+        if answers['delete_option'] == "choice from existing VMs list":
             return self.pick_vm().split(':')[1]
 
         elif answers['delete_option'] =="enter VM UUID":
@@ -350,7 +359,6 @@ class Cli:
                 self.performe_CheckVmStatus()
             elif (action == 'DeleteVm'):
                 self.performe_deleteVm()
-                print(self.get_all_servers_list())
             elif (action == 'VmConsole'):
                 self.perfome_VmConsole()
             elif (action == 'PerformanceStat'):
@@ -455,4 +463,91 @@ class Cli:
 if __name__ == '__main__':
     ins = Cli()
     ins.action()
+
+# {
+#    "plans" : {
+#       "plan" : [
+#          {
+#             "core_number" : 1,
+#             "memory_amount" : 1024,
+#             "name" : "1xCPU-1GB",
+#             "public_traffic_out" : 1024,
+#             "storage_size" : 25,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 1,
+#             "memory_amount" : 2048,
+#             "name" : "1xCPU-2GB",
+#             "public_traffic_out" : 2048,
+#             "storage_size" : 50,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 2,
+#             "memory_amount" : 4096,
+#             "name" : "2xCPU-4GB",
+#             "public_traffic_out" : 4096,
+#             "storage_size" : 80,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 4,
+#             "memory_amount" : 8192,
+#             "name" : "4xCPU-8GB",
+#             "public_traffic_out" : 5120,
+#             "storage_size" : 160,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 6,
+#             "memory_amount" : 16384,
+#             "name" : "6xCPU-16GB",
+#             "public_traffic_out" : 6144,
+#             "storage_size" : 320,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 8,
+#             "memory_amount" : 32768,
+#             "name" : "8xCPU-32GB",
+#             "public_traffic_out" : 7168,
+#             "storage_size" : 640,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 12,
+#             "memory_amount" : 49152,
+#             "name" : "12xCPU-48GB",
+#             "public_traffic_out" : 9216,
+#             "storage_size" : 960,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 16,
+#             "memory_amount" : 65536,
+#             "name" : "16xCPU-64GB",
+#             "public_traffic_out" : 10240,
+#             "storage_size" : 1280,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 20,
+#             "memory_amount" : 131072,
+#             "name" : "20xCPU-128GB",
+#             "public_traffic_out" : 24576,
+#             "storage_size" : 2048,
+#             "storage_tier" : "maxiops"
+#          },
+#          {
+#             "core_number" : 20,
+#             "memory_amount" : 98304,
+#             "name" : "20xCPU-96GB",
+#             "public_traffic_out" : 12288,
+#             "storage_size" : 1920,
+#             "storage_tier" : "maxiops"
+#          }
+#       ]
+#    }
+# }
 

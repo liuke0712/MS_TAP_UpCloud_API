@@ -41,5 +41,5 @@ class server(BaseAPI):
     def do(self):
         self.get(self.endpoint)
 
-# if __name__ == '__main__':
-#     plans().do()
+if __name__ == '__main__':
+     plans().do()
