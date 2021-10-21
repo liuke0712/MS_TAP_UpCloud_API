@@ -227,7 +227,7 @@ class Cli:
         answers = prompt(directions_prompt)
         return answers['vm']
 
-    def get_choice(self,action='not_delete'):
+    def get_choice(self,action='not_multi_choices'):
         directions_prompt = {
             'type': 'list',
             'name': 'delete_option',
@@ -236,7 +236,7 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         if answers['delete_option'] == "choice from existing VMs list":
-            if action=='delete':
+            if action == 'multi_choices':
                 return self.multi_choice2()
             else:
                 return self.pick_vm().split(':')[1]
@@ -344,30 +344,67 @@ class Cli:
                     new_uuid_list.remove(uuid)
                     self.mylogger.info_logger('The Server: ' + uuid + ' is in ' + status + ' status.')
 
-    # def perform_modify(self):
-    #     uuid = self.get_choice()
-    #     print("This is the current server configuration")
-    #     self.after_create_info(uuid)
-
-
-
-    def performe_deleteVm(self):
-        uuid_list=[]
-        out = self.get_choice("delete")
-        if type(out)==list:
+    def perform_modify(self):
+        uuid_list = []
+        out = self.get_choice("multi_choices")
+        if type(out) == list:
             for i in out:
                 uuid_list.append(i.split(':')[1])
         else:
             uuid_list.append(out)
         for count, uuid in enumerate(uuid_list):
-            print('Stopping server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            print("This is the current server configuration "+  str(count + 1) + "/" + str(
+                len(uuid_list)))
+            self.after_create_info(uuid)
+        new_plan, not_used = self.ask_plan()
+        for count, uuid in enumerate(uuid_list):
+            print('Stopping server '+  str(count + 1) + "/" + str(
+                len(uuid_list))+': '+str(uuid)  )
             requests.post(baseURL + '/server/stop/' + uuid)
             while True:
                 status = self.get_server_status(uuid)
                 if status == 'stopped':
                     break
             print("Server status: stopped")
-            print('Deleting server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            print('Modifying server: '+ str(uuid) +  str(count + 1) + "/" + str(
+                len(uuid_list)) )
+            new_config={
+                'plan': new_plan
+            }
+            response = requests.put(baseURL + '/server/' +uuid, json=json.dumps(new_config))
+            json_config=response.json()['server']
+            print('This is the new server config:')
+            updated_config={
+                 'hostname': json_config['hostname'],
+                 'title': json_config['title'],
+                 'uuid': uuid,
+                 'plan': json_config['plan']
+             }
+            print(json.dumps(updated_config,indent=4))
+            print('Starting the server after updating... '+  str(count + 1) + "/" + str(
+                len(uuid_list)))
+
+            response_start = requests.post(baseURL + '/server/start/' +uuid)
+            print('The server has been started \n')
+
+
+    def performe_deleteVm(self):
+        uuid_list=[]
+        out = self.get_choice("multi_choices")
+        if type(out)==list:
+            for i in out:
+                uuid_list.append(i.split(':')[1])
+        else:
+            uuid_list.append(out)
+        for count, uuid in enumerate(uuid_list):
+            print('Stopping server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ')')
+            requests.post(baseURL + '/server/stop/' + uuid)
+            while True:
+                status = self.get_server_status(uuid)
+                if status == 'stopped':
+                    break
+            print("Server status: stopped")
+            print('Deleting server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ')')
             response = requests.delete(baseURL + '/server/' + uuid)
             if not response.text:
                 print("Server status (uuid: " + uuid + "): deleted.")
@@ -558,4 +595,4 @@ class Cli:
 
 if __name__ == '__main__':
     ins = Cli()
-    ins.performe_deleteVm()
+    ins.perform_modify()

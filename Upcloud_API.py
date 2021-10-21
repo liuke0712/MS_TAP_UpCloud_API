@@ -181,8 +181,8 @@ class Upcloud_API:
                                                     "plan" : plan
                                                   }
                                                 }))
-        self.mylogger.info_logger('The plan of Server: '+uuid+' has been changed to '+plan+'.')
-        return response.text
+        self.mylogger.info_logger('The plan of Server: '+uuid+' has been changed to '+str(plan) +'.')
+        return response.json()
 
     # delete a vm based on the uuid
     def rm_server(self, uuid, storages=1, backups='delete'):
