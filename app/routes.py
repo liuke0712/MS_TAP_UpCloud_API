@@ -59,7 +59,6 @@ def stop_server(uuid):
 @app.route('/server/<uuid>', methods=['DELETE'])
 def delete_server(uuid):
     response = api.rm_server(uuid)
-    print(response)
     return response
 
 
