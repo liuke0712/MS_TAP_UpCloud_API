@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from upcloud_api import Server, Storage, login_user_block
 import logs
 import os
+import requests
 
 
 class Upcloud_API:
@@ -22,8 +23,8 @@ class Upcloud_API:
             self.login_user = self.get_login_user()
         else:
             self.login_user = self.key_pair_create()
-        self.planList = ["1xCPU-2GB", "1xCPU-1GB", "2xCPU-4GB", "4xCPU-8GB", "6xCPU-16GB", "8xCPU-32GB", "12xCPU-48GB",
-                         "16xCPU-64GB", "20xCPU-96GB", "20xCPU-128G"]
+        # self.planList = OrderedDist([("1xCPU-2GB",25), ("1xCPU-1GB",50), "2xCPU-4GB", "4xCPU-8GB", "6xCPU-16GB", "8xCPU-32GB", "12xCPU-48GB",
+        #                  "16xCPU-64GB", "20xCPU-96GB", "20xCPU-128G"])
 
     # get public key from the existing private key
     def get_login_user(self):
@@ -75,11 +76,15 @@ class Upcloud_API:
         templates = self.manager.get_templates()
         return templates
 
+    def plan(self):
+        plan = self.manager.get_
+
     # new server creation
-    def create_server(self, plan, zone, hostname, os, os_size):
+    def create_server(self, plan, zone, hostname, os, os_size,title):
         server = Server(
             plan=plan,
             hostname=hostname,
+            title=title,
             zone=zone,  # All available zones with ids can be retrieved by using manager.get_zones()
             storage_devices=[
                 Storage(os=os, size=os_size),
@@ -91,6 +96,12 @@ class Upcloud_API:
         server_name = server.to_dict()['hostname']
         self.mylogger.info_logger(server_name + ' with uuid:' +server_uuid+' was created.')
         return server
+
+    #modify the server
+    def modify_server(self,uuid):
+        server = self.manager.get_server(uuid)
+        # server = self.manager.modify_server(uuid=uuid,plan=update_plan)
+        response = requests.get('http://api.upcloud.com/server/<uuid>',method=['GET'])
 
     # get current server status
     def server_status(self, uuid):
@@ -169,6 +180,7 @@ class Upcloud_API:
 
 if __name__ == '__main__':
     ins = Upcloud_API()
+    print(ins.modify_server(uuid='00c6cd41-3e4e-4368-9a43-db8a00f2d845',plan='2xCPU-4GB'))
     # ins.get_login_user()
     # print(ins.check_log('00c9f070-5cee-482f-97a8-24fb848d948d'))
     # print(ins.server_list())
@@ -177,7 +189,7 @@ if __name__ == '__main__':
     # print(ins.single_server('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.access_console('00effc4b-47f5-4394-a357-0750c810b096'))
     # print(ins.server_list())
-    print(ins.server_status('0005cdb3-a035-4625-bf7d-449117a2b7cc'))
+    # print(ins.server_status('0005cdb3-a035-4625-bf7d-449117a2b7cc'))
     # print(ins.perform_statistic_linux('0028ea76-cb26-43e7-9862-d89d164e2a6a'))
     # print(ins.create_server("2xCPU-4GB","uk-lon1","maggie.jmw.com", "01000000-0000-4000-8000-000030200200", "10"))
     # print(ins.server_stop('00c9f070-5cee-482f-97a8-24fb848d948d'))
