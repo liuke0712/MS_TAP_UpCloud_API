@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -20,9 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="92fec796-b5b0-4da0-a64e-880c602a107d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Upcloud_API.py" beforeDir="false" afterPath="$PROJECT_DIR$/Upcloud_API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,21 +55,21 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="reference.settings.deploy.options" />
   </component>
   <component name="RunManager">
     <configuration name="Upcloud_API" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="MS_TAP_UpCloud_API" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\liuke\PycharmProjects\UpCloudAPI\my_env\Scripts\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Upcloud_API.py" />
       <option name="PARAMETERS" value="" />
@@ -93,7 +95,8 @@
       <option name="presentableId" value="Default" />
       <updated>1634761955807</updated>
       <workItem from="1634761956999" duration="1431000" />
-      <workItem from="1634763455713" duration="9122000" />
+      <workItem from="1634763455713" duration="9721000" />
+      <workItem from="1634839023338" duration="1197000" />
     </task>
     <servers />
   </component>
@@ -110,34 +113,39 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
     <state x="2610" y="129" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1634838378128">
       <screen x="1920" y="-158" width="1920" height="1080" />
     </state>
     <state x="2610" y="129" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838378128" />
-    <state width="1877" height="352" key="GridCell.Tab.0.bottom" timestamp="1634837517800">
+    <state width="938" height="185" key="GridCell.Tab.0.bottom" timestamp="1634840151654">
+      <screen x="1920" y="-158" width="1920" height="1040" />
+    </state>
+    <state width="938" height="185" key="GridCell.Tab.0.bottom/0.0.1536.824/1920.-158.1920.1040@1920.-158.1920.1040" timestamp="1634840151654" />
+    <state width="938" height="352" key="GridCell.Tab.0.bottom/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838986228" />
+    <state width="938" height="185" key="GridCell.Tab.0.center" timestamp="1634840151654">
+      <screen x="1920" y="-158" width="1920" height="1040" />
+    </state>
+    <state width="938" height="185" key="GridCell.Tab.0.center/0.0.1536.824/1920.-158.1920.1040@1920.-158.1920.1040" timestamp="1634840151654" />
+    <state width="938" height="352" key="GridCell.Tab.0.center/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838986228" />
+    <state width="938" height="185" key="GridCell.Tab.0.left" timestamp="1634840151654">
+      <screen x="1920" y="-158" width="1920" height="1040" />
+    </state>
+    <state width="938" height="185" key="GridCell.Tab.0.left/0.0.1536.824/1920.-158.1920.1040@1920.-158.1920.1040" timestamp="1634840151654" />
+    <state width="938" height="352" key="GridCell.Tab.0.left/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838986227" />
+    <state width="938" height="185" key="GridCell.Tab.0.right" timestamp="1634840151654">
+      <screen x="1920" y="-158" width="1920" height="1040" />
+    </state>
+    <state width="938" height="185" key="GridCell.Tab.0.right/0.0.1536.824/1920.-158.1920.1040@1920.-158.1920.1040" timestamp="1634840151654" />
+    <state width="938" height="352" key="GridCell.Tab.0.right/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838986228" />
+    <state x="2381" y="27" key="SettingsEditor" timestamp="1634838939497">
       <screen x="1920" y="-158" width="1920" height="1080" />
     </state>
-    <state width="1877" height="352" key="GridCell.Tab.0.bottom/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634837517800" />
-    <state width="1877" height="352" key="GridCell.Tab.0.center" timestamp="1634837517800">
-      <screen x="1920" y="-158" width="1920" height="1080" />
-    </state>
-    <state width="1877" height="352" key="GridCell.Tab.0.center/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634837517800" />
-    <state width="1877" height="352" key="GridCell.Tab.0.left" timestamp="1634837517800">
-      <screen x="1920" y="-158" width="1920" height="1080" />
-    </state>
-    <state width="1877" height="352" key="GridCell.Tab.0.left/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634837517800" />
-    <state width="1877" height="352" key="GridCell.Tab.0.right" timestamp="1634837517800">
-      <screen x="1920" y="-158" width="1920" height="1080" />
-    </state>
-    <state width="1877" height="352" key="GridCell.Tab.0.right/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634837517800" />
-    <state x="2381" y="27" key="SettingsEditor" timestamp="1634761996622">
-      <screen x="1920" y="-158" width="1920" height="1080" />
-    </state>
-    <state x="2381" y="27" key="SettingsEditor/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634761996622" />
+    <state x="2381" y="27" key="SettingsEditor/0.0.1536.864/1920.-158.1920.1080@1920.-158.1920.1080" timestamp="1634838939497" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MS_TAP_UpCloud_API$Upcloud_API.coverage" NAME="Upcloud_API Coverage Results" MODIFIED="1634837517742" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MS_TAP_UpCloud_API$Upcloud_API.coverage" NAME="Upcloud_API Coverage Results" MODIFIED="1634840151638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
