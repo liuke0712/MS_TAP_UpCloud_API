@@ -5,10 +5,13 @@ import re
 import threading
 import time
 
+import inquirer
 import requests
 from PyInquirer import prompt
 from PyInquirer import style_from_dict, Token
 
+from PyInquirer import style_from_dict, Token, prompt, Separator
+from pprint import pprint
 from Upcloud_API import Upcloud_API
 from shell import Shell
 import logs
@@ -31,6 +34,29 @@ class Cli:
     def __init__(self):
         self.manager = Upcloud_API()
         self.mylogger = logs.Logs()
+
+
+
+    def multi_choice2(self):
+        vm_list=self.get_all_servers_list()
+        vm_dict_list=[]
+        for i in vm_list:
+            info = {
+                "name": i
+            }
+            vm_dict_list.append(info)
+        questions = [
+            {
+                'type': 'checkbox',
+                'message': 'Please choose the VMs you want to delete(you need to to choose at least one)',
+                'name': 'vm_list_to_delete',
+                'choices': vm_dict_list,
+                'validate': lambda answer: 'You must choose at least one VM.' \
+                    if len(answer) == 0 else True
+            }
+        ]
+        answers = prompt(questions, style=style)
+        return answers['vm_list_to_delete']
 
     def ask_action(self):
         directions_prompt = {
@@ -201,7 +227,7 @@ class Cli:
         answers = prompt(directions_prompt)
         return answers['vm']
 
-    def get_choice(self):
+    def get_choice(self,action='not_delete'):
         directions_prompt = {
             'type': 'list',
             'name': 'delete_option',
@@ -210,7 +236,10 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         if answers['delete_option'] == "choice from existing VMs list":
-            return self.pick_vm().split(':')[1]
+            if action=='delete':
+                return self.multi_choice2()
+            else:
+                return self.pick_vm().split(':')[1]
 
         elif answers['delete_option'] == "enter VM UUID":
             count = 0
@@ -269,7 +298,9 @@ class Cli:
             'hostname': server_details['hostname'],
             'title': server_details['title'],
             'uuid': uuid,
-            'ip': ip
+            'ip': ip,
+            'plan':server_details['plan']
+
         }
         print(json.dumps(dict, indent=4))
 
@@ -313,22 +344,36 @@ class Cli:
                     new_uuid_list.remove(uuid)
                     self.mylogger.info_logger('The Server: ' + uuid + ' is in ' + status + ' status.')
 
+    # def perform_modify(self):
+    #     uuid = self.get_choice()
+    #     print("This is the current server configuration")
+    #     self.after_create_info(uuid)
+
+
+
     def performe_deleteVm(self):
-        uuid = self.get_choice()
-        print('Stopping server...')
-        requests.post(baseURL + '/server/stop/' + uuid)
-        while True:
-            status = self.get_server_status(uuid)
-            if status == 'stopped':
-                break
-        print("Server status: stopped")
-        print('Deleting server...')
-        response = requests.delete(baseURL + '/server/' + uuid)
-        if not response.text:
-            print("Server status (uuid: " + uuid + "): deleted.")
-            self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
+        uuid_list=[]
+        out = self.get_choice("delete")
+        if type(out)==list:
+            for i in out:
+                uuid_list.append(i.split(':')[1])
         else:
-            print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error']['error_message'])
+            uuid_list.append(out)
+        for count, uuid in enumerate(uuid_list):
+            print('Stopping server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            requests.post(baseURL + '/server/stop/' + uuid)
+            while True:
+                status = self.get_server_status(uuid)
+                if status == 'stopped':
+                    break
+            print("Server status: stopped")
+            print('Deleting server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            response = requests.delete(baseURL + '/server/' + uuid)
+            if not response.text:
+                print("Server status (uuid: " + uuid + "): deleted.")
+                self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
+            else:
+                print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error']['error_message'])
 
     def performe_CheckVmStatus(self):
         self.get_checkStatus_choice()
@@ -513,4 +558,4 @@ class Cli:
 
 if __name__ == '__main__':
     ins = Cli()
-    ins.action()
+    ins.performe_deleteVm()
