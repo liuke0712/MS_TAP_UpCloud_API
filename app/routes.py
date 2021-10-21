@@ -49,7 +49,19 @@ def get_server_perf(uuid):
     return jsonify(response)
 
 
-@app.route('/server/stop/<uuid>', methods=['DELETE'])
+@app.route('/server/<uuid>', methods=['PUT'])
+def modify_server(uuid):
+    response = api.server_modify(uuid)
+    return jsonify(response.json())
+
+
+@app.route('/server/start/<uuid>', methods=['POST'])
+def start_server(uuid):
+    api.server_start(uuid)
+    return "Staring server"
+
+
+@app.route('/server/stop/<uuid>', methods=['POST'])
 def stop_server(uuid):
     api.server_stop(uuid)
     return "Stopping server"

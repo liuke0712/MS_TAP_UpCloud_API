@@ -42,4 +42,8 @@ class server(BaseAPI):
         self.get(self.endpoint)
 
 if __name__ == '__main__':
+<<<<<<< HEAD
+    plans().do()
+=======
      plans().do()
+>>>>>>> 2ae96548931eb0ad4fdc60712460871e721145cb

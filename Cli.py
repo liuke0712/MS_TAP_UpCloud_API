@@ -90,7 +90,7 @@ class Cli:
             'choices': plans.keys()
         }
         answers = prompt(directions_prompt)
-        return answers['plan'],plans[answers['plan']]
+        return answers['plan'], plans[answers['plan']]
 
     def ask_os(self):
         directions_prompt = {
@@ -101,15 +101,17 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         return answers['os']
-    def ask_os_size(self,default_size):
+
+    def ask_os_size(self, default_size):
         directions_prompt = {
             'type': 'list',
             'name': 'os_size',
-            'message': 'Would you like to change the default storage size('+ str(default_size) + 'GB)?',
-            'choices': ['NO','YES']
+            'message': 'Would you like to change the default storage size(' + str(default_size) + 'GB)?',
+            'choices': ['NO', 'YES']
         }
         answers = prompt(directions_prompt)
         return answers['os_size']
+
     def get_os_storage(self):
         while True:
             try:
@@ -153,8 +155,8 @@ class Cli:
     def get_vm_details(self):
         vmDetails = []
         zone = self.ask_zone()
-        os_name=self.ask_os()
-        plan, os_size= self.ask_plan()
+        os_name = self.ask_os()
+        plan, os_size = self.ask_plan()
         if self.ask_os_size(os_size) == 'YES':
             os_size = self.get_os_storage()
         os = self.get_os_dict()[os_name]
@@ -219,7 +221,7 @@ class Cli:
         directions_prompt = {
             'type': 'list',
             'name': 'vm',
-            'message': '  please pick one of the bellow VM list',
+            'message': '  please pick one of the below VM list',
             'choices': self.get_all_servers_list()
         }
         answers = prompt(directions_prompt)
@@ -357,20 +359,21 @@ class Cli:
                 uuid_list.append(i.split(':')[1])
         else:
             uuid_list.append(out)
-        monitor = self.request_progress()
-        for uuid in uuid_list:
-            requests.delete(baseURL + '/server/stop/' + uuid)
-            if monitor == 'YES':
-                while True:
-                    status = self.get_server_status(uuid)
-                    if status == 'stopped':
-                        break
-                print("Server status: stopped")
+        for count, uuid in enumerate(uuid_list):
+            print('Stopping server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
+            requests.post(baseURL + '/server/stop/' + uuid)
+            while True:
+                status = self.get_server_status(uuid)
+                if status == 'stopped':
+                    break
+            print("Server status: stopped")
+            print('Deleting server... (' + str(count + 1) + "/" + str(len(vm_list)) + ')')
             response = requests.delete(baseURL + '/server/' + uuid)
-            if response.text == 'SUCCESS':
-                print("Server status (uuid: " + uuid + "): destroyed.")
+            if not response.text:
+                print("Server status (uuid: " + uuid + "): deleted.")
+                self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
             else:
-                print("Failed to destroy server (uuid: " + uuid + "): " + response.text)
+                print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error']['error_message'])
 
     def performe_CheckVmStatus(self):
         self.get_checkStatus_choice()
