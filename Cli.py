@@ -316,7 +316,7 @@ class Cli:
     def performe_deleteVm(self):
         uuid = self.get_choice()
         print('Stopping server...')
-        requests.delete(baseURL + '/server/stop/' + uuid)
+        requests.post(baseURL + '/server/stop/' + uuid)
         while True:
             status = self.get_server_status(uuid)
             if status == 'stopped':
