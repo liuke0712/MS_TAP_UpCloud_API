@@ -45,7 +45,6 @@ def get_server_status(uuid):
 @app.route('/server/perf/<uuid>', methods=['GET'])
 def get_server_perf(uuid):
     response = api.perform_statistic_linux(uuid)
-    print(response)
     return jsonify(response)
 
 
@@ -84,7 +83,6 @@ def get_zones():
 
 @app.route('/plan', methods=['GET'])
 def get_plans():
-    print(api.planList)
     return jsonify(api.planList)
 
 
