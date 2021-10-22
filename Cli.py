@@ -56,7 +56,8 @@ class Cli:
             'type': 'list',
             'name': 'action',
             'message': 'Which action would you like to perform?',
-            'choices': ['Create VM', 'Check VM Status', 'Delete VM', 'Access VM Console', 'Check VM Performance', 'Check VM Events', 'EXIT']
+            'choices': ['Create VM', 'Check VM Status', 'Modify VM', 'Delete VM', 'Access VM Console', 'Check VM Performance',
+                        'Check VM Events', 'EXIT']
         }
         answers = prompt(directions_prompt)
         return answers['action']
@@ -133,7 +134,7 @@ class Cli:
         }
         answers = prompt(directions_prompt)
         return answers['request_prog']
-    
+
     # ask the user to confirm their options when creating VM
     def choice_confirm(self):
         directions_prompt = {
@@ -151,12 +152,13 @@ class Cli:
     def get_os_dict(self):
         response = requests.get(baseURL + '/template')
         mylist = response.json()
-        all_keys = list(set().union(*(d.keys() for d in mylist)))
-        all_values = list(set().union(*(d.values() for d in mylist)))
-        d = dict(zip(all_keys, all_values))
+        d = {}
+        for os in mylist:
+            key = list(os.keys())[0]
+            d[key] = os[key]
         return d
 
-    #get the existing server list
+    # get the existing server list
     def get_all_servers_list(self):
         hostname_list = []
         response = requests.get(baseURL + '/server')
@@ -184,6 +186,7 @@ class Cli:
                 else:
                     print('Please enter a valid value.')
             option = self.choice_confirm()
+            print(option)
             if option == 'Confirm':
                 break
             elif option == 'Return To the Main Menu':
@@ -198,27 +201,12 @@ class Cli:
             count = count + 1
         return vmDetails
 
-    #get server status using it uuid
+    # get server status using it uuid
     def get_server_status(self, uuid):
         response = requests.get(baseURL + '/server/status/' + uuid)
         return response.text
 
-    def get_os_dict(self):
-        response = requests.get(baseURL + '/template')
-        mylist = response.json()
-        d = {}
-        for os in mylist:
-            key = list(os.keys())[0]
-            d[key] = os[key]
-        return d
-
-    def get_all_servers_list(self):
-        hostname_list = []
-        response = requests.get(baseURL + '/server')
-        for i in response.json():
-            hostname_list.append(i['hostname'] + ":" + i['uuid'])
-
-    #utility function to get user input
+    # utility function to get user input
     def get_input(self, msg):
         questions = [
             {
@@ -238,7 +226,6 @@ class Cli:
             answers = prompt(questions)
         return answers['x']
 
-
     # ask the user to pick a vm from the existing vm list
     def pick_vm(self):
 
@@ -252,7 +239,7 @@ class Cli:
         return answers['vm']
 
     # get the user chice
-    def get_choice(self,action='not_multi_choices'):
+    def get_choice(self, action='not_multi_choices'):
         directions_prompt = {
             'type': 'list',
             'name': 'delete_option',
@@ -284,45 +271,7 @@ class Cli:
             print('########EXITING PROGRAM THANKS##########')
             exit()
 
-    # get muliti_choice for the user
-    def multi_choice2(self):
-        vm_list=self.get_all_servers_list()
-        vm_dict_list=[]
-        for i in vm_list:
-            info = {
-                "name": i
-            }
-            vm_dict_list.append(info)
-        questions = [
-            {
-                'type': 'checkbox',
-                'message': 'Please choose the VMs you want to delete(you need to to choose at least one)',
-                'name': 'vm_list_to_delete',
-                'choices': vm_dict_list,
-                'validate': lambda answer: 'You must choose at least one VM.' \
-                    if len(answer) == 0 else True
-            }
-        ]
-        answers = prompt(questions, style=style)
-        return answers['vm_list_to_delete']
-
-    # confirm the user options when creating the vm
-    def choice_confirm(self):
-        directions_prompt = {
-            'type': 'list',
-            'name': 'confirm_option',
-            'message': 'please confirm your options?',
-            'choices': ['Confirm', 'Choose again', 'Return To the Main Menu']
-        }
-        answers = prompt(directions_prompt)
-        if answers['confirm_option'] == "Confirm":
-            print("options confirmed\n")
-        elif answers['confirm_option'] == "Choose again":
-            self.get_vm_details()
-        elif answers['confirm_option'] == "Return To the Main Menu":
-            self.action()
-
-    #get vm status
+    # get vm status
     def get_checkStatus_choice(self):
         directions_prompt = {
             'type': 'list',
@@ -370,7 +319,7 @@ class Cli:
         }
         print(json.dumps(dict, indent=4))
 
-    #start the logging process in the backend
+    # start the logging process in the backend
     def logging_thread(self, new_uuid_list):
         while new_uuid_list:
             for uuid in new_uuid_list:
@@ -381,9 +330,9 @@ class Cli:
 
     # return creat vm request summary
     def requestSummary(self, vmDetails, monitor):
-        print("..")
         summary = []
-        for i in vmDetails:
+        print("=======New VM Configurations Summary======== \n")
+        for count, i in enumerate(vmDetails):
             thisdict = {
                 "title": i[5],
                 "hostname": i[0],
@@ -392,13 +341,11 @@ class Cli:
                 "os": i[2],
                 "size": i[4]
             }
-
+            print(f'Server {count + 1}/{len(vmDetails)}')
+            print(json.dumps(thisdict, indent=4))
             summary.append(thisdict)
-        print("=======this is your request choices summary======== \n\n\n")
-        print("VMs DETAILS \n\n\n")
-        print(summary)
-        print("\n\n\n")
-        print("MONITORING CHOICE: ", monitor, "\n\n\n")
+        print("\n\n")
+        print("MONITORING CHOICE: ", monitor, "\n")
         return summary
 
     # perfrom create vm action
@@ -442,18 +389,18 @@ class Cli:
         out = self.get_choice("multi_choices")
         if type(out) == list:
             for i in out:
-                uuid_list.append(i.split(':')[1])
+                uuid_list.append(i.split(':')[1].strip())
         else:
             uuid_list.append(out)
         uuid_len = len(uuid_list)
         print("\n=======Current Server Configurations======== \n")
         for count, uuid in enumerate(uuid_list):
-            print(f"Server {count+1}/{uuid_len}")
+            print(f"Server {count + 1}/{uuid_len}")
             self.after_create_info(uuid)
         print('')
         new_plan, not_used = self.ask_plan()
         for count, uuid in enumerate(uuid_list):
-            print(f'Stopping server ({uuid})... ({count+1}/{uuid_len})')
+            print(f'Stopping server ({uuid})... ({count + 1}/{uuid_len})')
             requests.post(baseURL + '/server/stop/' + uuid)
         print('')
         count = 1
@@ -480,19 +427,19 @@ class Cli:
                     print('The server has been started \n')
                     count += 1
                     uuid_list.remove(uuid)
-    
+
     # perform delete VM action
     def perform_deleteVm(self):
         uuid_list = []
         out = self.get_choice("multi_choices")
         if type(out) == list:
             for i in out:
-                uuid_list.append(i.split(':')[1])
+                uuid_list.append(i.split(':')[1].strip())
         else:
             uuid_list.append(out)
         uuid_len = len(uuid_list)
         for count, uuid in enumerate(uuid_list):
-            print(f'Stopping server ({uuid})... ({count+1}/{uuid_len})')
+            print(f'Stopping server ({uuid})... ({count + 1}/{uuid_len})')
             requests.post(baseURL + '/server/stop/' + uuid)
         print('')
         count = 1
@@ -507,12 +454,12 @@ class Cli:
                         self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
                     else:
                         print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error'][
-                            'error_message']+'\n')
+                            'error_message'] + '\n')
                     count += 1
                     uuid_list.remove(uuid)
 
     # perfrom check vm status  action
-    def performe_CheckVmStatus(self):
+    def perform_CheckVmStatus(self):
         self.get_checkStatus_choice()
 
     # perfrom access vm console action
@@ -524,8 +471,13 @@ class Cli:
             if i['access'] == 'public' and i['family'] == 'IPv4':
                 ip = i['address']
         print("Connecting to the VM...")
-        sh = Shell(ip, 'root', 'private_key.pem')
-        sys.stdout.write('\n')
+        sh = Shell()
+        response = sh.connect(ip, 'root', 'private_key.pem')
+        if response != "Success":
+            print(response+'\n')
+            return
+        print("-----------Connection successful----------")
+        print("exit or <ctrl+c> to close the console")
         # Print initial command line
         while True:
             if sh.channel.recv_ready():
@@ -565,6 +517,9 @@ class Cli:
         uuid = self.get_choice()
         response = requests.get(baseURL + '/server/perf/' + uuid)
         perf_details = response.json()
+        if 'api_error' in perf_details:
+            print(perf_details['api_error']+'\n')
+            return
         print('')
         for line in perf_details:
             print(line.strip())
@@ -586,15 +541,17 @@ class Cli:
         action = self.ask_action()
         while True:
             if (action == 'Create VM'):
-                self.performe_CreateVM()
+                self.perform_CreateVM()
             elif (action == 'Check VM Status'):
-                self.performe_CheckVmStatus()
+                self.perform_CheckVmStatus()
+            elif (action == 'Modify VM'):
+                self.perform_modify()
             elif (action == 'Delete VM'):
-                self.performe_deleteVm()
+                self.perform_deleteVm()
             elif (action == 'Access VM Console'):
-                self.perfome_VmConsole()
+                self.perform_VmConsole()
             elif (action == 'Check VM Performance'):
-                self.perfome_checkPerformance()
+                self.perform_checkPerformance()
             elif (action == 'Check VM Events'):
                 self.perform_events()
             elif (action == 'EXIT'):
@@ -602,48 +559,6 @@ class Cli:
                 exit()
             action = self.ask_action()
 
-    def requestSummary(self, vmDetails, monitor):
-        print("..")
-        summary = []
-        print("=======New VM Configurations Summary======== \n")
-        for count, i in enumerate(vmDetails):
-            thisdict = {
-                "title": i[5],
-                "hostname": i[0],
-                "zone": i[1],
-                "plan": i[3],
-                "os": i[2],
-                "size": i[4]
-            }
-            print(f'Server {count + 1}/{len(vmDetails)}')
-            print(json.dumps(thisdict, indent=4))
-            summary.append(thisdict)
-        print("\n\n")
-        print("MONITORING CHOICE: ", monitor, "\n")
-        return summary
-
-    def get_server_status(self, uuid):
-        response = requests.get(baseURL + '/server/status/' + uuid)
-        return response.text
-
-    def get_input(self, msg):
-        questions = [
-            {
-                'type': 'input',
-                'name': 'x',
-                'message': msg,
-            }
-        ]
-        if 'title' not in msg:
-            while True:
-                answers = prompt(questions)
-                if answers['x']:
-                    break
-                else:
-                    print('Please enter a value.')
-        else:
-            answers = prompt(questions)
-        return answers['x']
 
 if __name__ == '__main__':
     ins = Cli()
