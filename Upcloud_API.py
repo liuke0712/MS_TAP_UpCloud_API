@@ -2,11 +2,9 @@ import base64
 import json
 import os
 from collections import OrderedDict
-from datetime import datetime
 
 import paramiko
 import requests
-from cryptography import x509
 import upcloud_api
 # from upcloud_api.storage import BackupDeletionPolicy
 from cryptography.hazmat.backends import default_backend
@@ -14,9 +12,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from upcloud_api import Server, Storage, login_user_block, UpCloudAPIError
 import logs
-import os
 import requests
-import json
+
 
 # upcloud api info and api account
 apiURL = 'https://api.upcloud.com/1.3'
@@ -153,6 +150,7 @@ class Upcloud_API:
                     err_lines = stderr.readlines()
                     command = 'export TERM=xterm && df'
                     stdin, stdout, stderr = ssh.exec_command(command)
+                    lines.append('\n')
                     lines.append('----------------------------------Disk Filesystem--------------------------------')
                     lines.extend(stdout)
                     err_lines.extend(stderr)
