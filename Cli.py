@@ -311,8 +311,7 @@ class Cli:
         vm_list = self.requestSummary(vmDetails, monitor)
         new_uuid_list = []
         for count, vm in enumerate(vm_list):
-            print("Start Creating server: " + vm['hostname'] + " order in the queue: " + str(count + 1) + "/" + str(
-                len(vm_list)))
+            print("Start Creating server: " + vm['hostname'] + " " + str(count + 1) + "/" + str(len(vm_list)))
             response = requests.post(baseURL + '/server', json=json.dumps(vm))
             if 'api_error' in response.json():
                 print("Failed to create server: " + response.json()['api_error'] + '\n')
@@ -323,6 +322,7 @@ class Cli:
             self.mylogger.info_logger(
                 'The Server: ' + response.json()['uuid'] + ' is in ' + response.json()['state'] + ' status.')
         if monitor == 'YES':
+            print('')
             count = 1
             while new_uuid_list:
                 for uuid in new_uuid_list:
@@ -353,39 +353,41 @@ class Cli:
                 uuid_list.append(i.split(':')[1])
         else:
             uuid_list.append(out)
+        uuid_len = len(uuid_list)
+        print("\n=======This is your current server configurations======== \n")
         for count, uuid in enumerate(uuid_list):
-            print("This is the current server configuration " + str(count + 1) + "/" + str(
-                len(uuid_list)))
+            print(f"Server {count+1}/{uuid_len}")
             self.after_create_info(uuid)
+        print('')
         new_plan, not_used = self.ask_plan()
         for count, uuid in enumerate(uuid_list):
-            print('Stopping server ' + str(count + 1) + "/" + str(
-                len(uuid_list)) + ': ' + str(uuid))
+            print(f'Stopping server ({uuid})... ({count+1}/{uuid_len})')
             requests.post(baseURL + '/server/stop/' + uuid)
-            while True:
-                status = self.get_server_status(uuid)
-                if status == 'stopped':
-                    break
-            print("Server status: stopped")
-            print('Modifying server... ' + str(count + 1) + "/" + str(len(uuid_list)))
-            new_config = {
-                'plan': new_plan
-            }
-            response = requests.put(baseURL + '/server/' + uuid, json=json.dumps(new_config))
-            json_config = response.json()['server']
-            print('This is the new server config:')
-            updated_config = {
-                'hostname': json_config['hostname'],
-                'title': json_config['title'],
-                'uuid': uuid,
-                'plan': json_config['plan']
-            }
-            print(json.dumps(updated_config, indent=4))
-            print('Starting the server after updating... ' + str(count + 1) + "/" + str(
-                len(uuid_list)))
-
-            response_start = requests.post(baseURL + '/server/start/' + uuid)
-            print('The server has been started \n')
+        print('')
+        count = 1
+        while uuid_list:
+            for uuid in uuid_list:
+                if self.get_server_status(uuid) == 'stopped':
+                    print(f'Modifying server... ({count}/{uuid_len})')
+                    print(f"Server status ({uuid}): stopped")
+                    new_config = {
+                        'plan': new_plan
+                    }
+                    response = requests.put(baseURL + '/server/' + uuid, json=json.dumps(new_config))
+                    json_config = response.json()['server']
+                    print('New server configuration:')
+                    updated_config = {
+                        'hostname': json_config['hostname'],
+                        'title': json_config['title'],
+                        'uuid': uuid,
+                        'plan': json_config['plan']
+                    }
+                    print(json.dumps(updated_config, indent=4))
+                    print(f'Starting the server after updating... ({count}/{uuid_len})')
+                    requests.post(baseURL + '/server/start/' + uuid)
+                    print('The server has been started \n')
+                    count += 1
+                    uuid_list.remove(uuid)
 
     def perform_deleteVm(self):
         uuid_list = []
@@ -395,22 +397,26 @@ class Cli:
                 uuid_list.append(i.split(':')[1])
         else:
             uuid_list.append(out)
+        uuid_len = len(uuid_list)
         for count, uuid in enumerate(uuid_list):
-            print('Stopping server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ') ' + uuid)
+            print(f'Stopping server ({uuid})... ({count+1}/{uuid_len})')
             requests.post(baseURL + '/server/stop/' + uuid)
-            while True:
-                status = self.get_server_status(uuid)
-                if status == 'stopped':
-                    break
-            print("Server status: stopped")
-            print('Deleting server... (' + str(count + 1) + "/" + str(len(uuid_list)) + ')')
-            response = requests.delete(baseURL + '/server/' + uuid)
-            if not response.text:
-                print("Server status: deleted.")
-                self.mylogger.info_logger("Server: " + uuid + " has been deleted.\n")
-            else:
-                print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error'][
-                    'error_message']+'\n')
+        print('')
+        count = 1
+        while uuid_list:
+            for uuid in uuid_list:
+                if self.get_server_status(uuid) == 'stopped':
+                    print(f'Deleting server... ({count}/{uuid_len})')
+                    print(f"Server status ({uuid}): stopped")
+                    response = requests.delete(baseURL + '/server/' + uuid)
+                    if not response.text:
+                        print(f"Server successfully deleted\n")
+                        self.mylogger.info_logger("Server: " + uuid + " has been deleted.")
+                    else:
+                        print("Failed to destroy server (uuid: " + uuid + "): " + json.loads(response.text)['error'][
+                            'error_message']+'\n')
+                    count += 1
+                    uuid_list.remove(uuid)
 
     def perform_CheckVmStatus(self):
         self.get_checkStatus_choice()
@@ -505,8 +511,8 @@ class Cli:
     def requestSummary(self, vmDetails, monitor):
         print("..")
         summary = []
-        print("=======This is your request choices summary======== \n\n")
-        print("VMs DETAILS \n\n")
+        print("=======This is your request choices summary======== \n")
+        print("VMs DETAILS \n")
         for count, i in enumerate(vmDetails):
             thisdict = {
                 "title": i[5],
@@ -520,7 +526,7 @@ class Cli:
             print(json.dumps(thisdict, indent=4))
             summary.append(thisdict)
         print("\n\n")
-        print("MONITORING CHOICE: ", monitor, "\n\n")
+        print("MONITORING CHOICE: ", monitor, "\n")
         return summary
 
     def get_server_status(self, uuid):
