@@ -45,7 +45,10 @@ def get_server_status(uuid):
 @app.route('/server/perf/<uuid>', methods=['GET'])
 def get_server_perf(uuid):
     response = api.perform_statistic_linux(uuid)
-    return jsonify(response)
+    if isinstance(response, str):
+        return jsonify({'api_error': response})
+    else:
+        return jsonify(response)
 
 
 @app.route('/server/<uuid>', methods=['PUT'])

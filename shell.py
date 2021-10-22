@@ -1,18 +1,30 @@
 import time
 import paramiko
+from paramiko.ssh_exception import SSHException
 
 
 class Shell:
-    def __init__(self, host, user, key_file):
+    def __init__(self, ):
         self.sshClient = paramiko.SSHClient()
         self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.sshClient.connect(host, username=user, key_filename=key_file, port=22)
-        self.channel = self.sshClient.get_transport().open_session()
-        self.channel.get_pty()
-        self.channel.invoke_shell()
+        self.channel = None
 
     def __del__(self):
         self.sshClient.close()
+
+    def connect(self, host, user, key_file):
+        try:
+            self.sshClient.connect(host, username=user, key_filename=key_file, port=22)
+            self.channel = self.sshClient.get_transport().open_session()
+            self.channel.get_pty()
+            self.channel.invoke_shell()
+            return "Success"
+        except SSHException as e:
+            return "Connection failed: " + str(e)
+        except TimeoutError as e:
+            return "Connection timeout: " + str(e)
+        except Exception as e:
+            return str(e)
 
     def execute(self, cmd):
         self.channel.send(cmd + "\n")

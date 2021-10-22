@@ -10,6 +10,7 @@ import upcloud_api
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from paramiko.ssh_exception import SSHException
 from upcloud_api import Server, Storage, login_user_block, UpCloudAPIError
 import logs
 import requests
@@ -136,7 +137,6 @@ class Upcloud_API:
         try:
             server = self.manager.get_server(uuid).to_dict()
             ip_addr = server['ip_addresses']
-            perform_info = []
             for ip in ip_addr:
                 if ip['access'] == 'public' and ip['family'] == 'IPv4':
                     ssh = paramiko.SSHClient()
@@ -159,8 +159,12 @@ class Upcloud_API:
                 return err_lines
             else:
                 return lines
+        except SSHException as e:
+            return "Connection failed: " + str(e)
+        except TimeoutError as e:
+            return "Connection timeout: " + str(e)
         except Exception as e:
-            raise e
+            return str(e)
 
     # stop the existing server
     def server_stop(self, uuid):
