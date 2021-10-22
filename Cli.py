@@ -1,11 +1,13 @@
 from __future__ import print_function, unicode_literals
+
 import json
 import re
-import sys
 import threading
 import time
+
 import requests
-from PyInquirer import style_from_dict, Token, prompt, Separator
+from PyInquirer import style_from_dict, Token, prompt
+
 import logs
 from Upcloud_API import Upcloud_API
 from shell import Shell

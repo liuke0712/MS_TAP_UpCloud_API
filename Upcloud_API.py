@@ -4,7 +4,6 @@ import os
 from collections import OrderedDict
 
 import paramiko
-import requests
 import upcloud_api
 # from upcloud_api.storage import BackupDeletionPolicy
 from cryptography.hazmat.backends import default_backend
