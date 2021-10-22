@@ -354,7 +354,7 @@ class Cli:
         else:
             uuid_list.append(out)
         uuid_len = len(uuid_list)
-        print("\n=======This is your current server configurations======== \n")
+        print("\n=======Current Server Configurations======== \n")
         for count, uuid in enumerate(uuid_list):
             print(f"Server {count+1}/{uuid_len}")
             self.after_create_info(uuid)
@@ -383,7 +383,7 @@ class Cli:
                         'plan': json_config['plan']
                     }
                     print(json.dumps(updated_config, indent=4))
-                    print(f'Starting the server after updating... ({count}/{uuid_len})')
+                    print(f'Starting updated server... ({count}/{uuid_len})')
                     requests.post(baseURL + '/server/start/' + uuid)
                     print('The server has been started \n')
                     count += 1
@@ -511,8 +511,7 @@ class Cli:
     def requestSummary(self, vmDetails, monitor):
         print("..")
         summary = []
-        print("=======This is your request choices summary======== \n")
-        print("VMs DETAILS \n")
+        print("=======New VM Configurations Summary======== \n")
         for count, i in enumerate(vmDetails):
             thisdict = {
                 "title": i[5],
