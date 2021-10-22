@@ -18,7 +18,7 @@ import os
 import requests
 import json
 
-
+# upcloud api info and api account
 apiURL = 'https://api.upcloud.com/1.3'
 api_username = 'tapaug2021ee'
 api_password = 'gr4D334uG2021'
@@ -78,6 +78,7 @@ class Upcloud_API:
             f.write(pem)
         return login_user
 
+    # get the zone info
     def get_zones(self):
         zones = self.manager.get_zones()['zones']['zone']
         zone_list = []
@@ -85,6 +86,7 @@ class Upcloud_API:
             zone_list.append(zone['id'])
         return zone_list
 
+    # get operation system templates
     def get_templates(self):
         templates = self.manager.get_templates()
         return templates
@@ -162,17 +164,20 @@ class Upcloud_API:
         except Exception as e:
             raise e
 
+    # stop the existing server
     def server_stop(self, uuid):
         server = self.manager.get_server(uuid)
         if server.to_dict()['state'] != 'stopped':
             server.shutdown(hard=True)
         self.mylogger.info_logger('Server: ' + uuid + ' has been stopped.')
 
+    # start an existing server
     def server_start(self,uuid):
         server = self.manager.get_server(uuid)
         server.start()
         self.mylogger.info_logger('Server: ' + uuid + ' has been started.')
 
+    # modify an existing server
     def server_modify(self,uuid,plan):
         response = requests.put(f'{apiURL}/server/{uuid}',
                                    headers={"Authorization": "Basic " + self.auth.decode(),"Content-Type": "application/json"},
@@ -201,27 +206,6 @@ class Upcloud_API:
         return server_log
 
 
-if __name__ == '__main__':
-    ins = Upcloud_API()
-    # ins.server_start('00ffd05c-8f9c-4f5f-95d5-e8eae992c3d8')
-    # print(ins.server_stop('00ffd05c-8f9c-4f5f-95d5-e8eae992c3d8'))
-    # print(ins.server_modify('00ffd05c-8f9c-4f5f-95d5-e8eae992c3d8','2xCPU-4GB'))
-    # ins.get_login_user()
-    # print(ins.check_log('00c9f070-5cee-482f-97a8-24fb848d948d'))
-    # print(ins.server_list())
-    # print(ins.get_zones())
-    # print(ins.get_templates())
-    # print(ins.single_server('00effc4b-47f5-4394-a357-0750c810b096'))
-    # print(ins.access_console('00effc4b-47f5-4394-a357-0750c810b096'))
-    # print(ins.server_list())
-    print(ins.server_status('00ffd05c-8f9c-4f5f-95d5-e8eae992c3d8'))
-    ins.server_start('00ffd05c-8f9c-4f5f-95d5-e8eae992c3d8')
-    # print(ins.perform_statistic_linux('0028ea76-cb26-43e7-9862-d89d164e2a6a'))
-    # print(ins.create_server("1xCPU-1GB","uk-lon1","maggie.modify-test.com", "01000000-0000-4000-8000-000030200200", "10",'modify-test'))
-    # print(ins.server_stop('00c9f070-5cee-482f-97a8-24fb848d948d'))
-    # print(ins.rm_server("00c9f070-5cee-482f-97a8-24fb848d948d"))
-# get server details
-# print(self.manager.get_server("0021e1da-be14-4440-8de6-f04b0650926b").to_dict())
-# get server states
-# print(manager.get_server("0021e1da-be14-4440-8de6-f04b0650926b").to_dict()['state'])
-# delete vms (stop first)
+# if __name__ == '__main__':
+#     ins = Upcloud_API()
+
